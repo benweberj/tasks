@@ -1,93 +1,83 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { colors, iTask, blankTask } from './utils'
+
+import { blankTask, theme } from './utils'
 
 const Form = styled.form`
-  outline: none;
 
-  input, textarea {
-    border: none;
-    background: none;
-    outline: none;
-    // border-radius: 6px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 25vw;
 
-    :hover {
-    }
+  // input, textarea {
+  //   background: none;
+  //   border: none;
+  //   outline: none;
+  //   // border: 1px dashed #eee;
+  //   width: 100%;
+  // }
 
-    :focus::placeholder {
-      opacity: .2;
-    }
-  }
+  // input {
+  //   color: ${theme.light};
+  //   font-size: 30px;
+  //   border-radius: 10px;
+  //   background: #fff1;
+  //   padding: 10px 15px;
+  //   width: 40vw;
+  //   display: block;
+  //   margin: auto;
+  //   text-align: center;
 
-  input {
-    font-size: 35px;
-    margin-bottom: 10px;
-    color: ${colors.green};
-    :focus { color: black }
-  }
+  //   ::placeholder {
+  //     opacity: .5;
+  //   }
+  // }
 
-  textarea {
-    font-size: 18px;
-    margin-left: 10px;
-    opacity: .8;
-    min-height: 80px;
-  }
+  // textarea {
+  //   font-size: 20px;
+  //   opacity: .75;
+  //   margin: 15px;
+  //   padding: 5px;
+  //   // color: #d4cccc;
+   
+  //   ::placeholder {
+  //     opacity: .3;
+  //   }
+  // }
 
-  button {
+  // #times {
+  //   display: flex;
+    
+  //   button {
+  //     margin-right: 5px;
+  //   }
+  // }
 
-  }
 `
 
-const Pill = styled.div<{ selected?: boolean }>`
-  // border: none;
-  // outline: none;
+const TaskCreator: React.FC<any> = props => {
+  const [data, setData] = useState(blankTask)
+  const { create, staged } = props
+  const times = [.1, 1, 5, 10, 15, 30, 60].map(t => t*60*1000)
 
-  cursor: pointer;
-  background: ${props => props.selected ? colors.green : '#eee'};
-  color: ${props => props.selected ? 'white' : '#666'};
-  display: inline;
-  margin: 5px;
-  padding: 6px 15px;
-  border-radius: 999px;
-  font-size: 14px;
+  useEffect(() => {
+    if (staged !== null) {
+      setData({ ...data, ...staged })
+    }
+  }, [staged])
 
-  :hover {
-    opacity: ${props => props.selected ? 1 : .5};
-  }
-`
-
-const TaskCreator: React.FC<{ create: (form:any) => void }> = props => {
-  const [form, setForm] = useState<iTask>(blankTask)
-  const { create } = props
-  const times = [.1, 1, 5, 10, 15, 30, 45, 60]
   return (
-    <Form {...props}>
-      <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} name='name' placeholder="What's the task?" />
-      <br />
-      <textarea value={form.comment} onChange={e => setForm({ ...form, comment: e.target.value })} name='description' placeholder='Comment...' />
-      <div style={{ display: 'flex' }}>
-        {times.map((time, i) => (
-          <Pill key={i} selected={form.duration === time} onClick={() => setForm({ ...form, duration: time })}>{time}m</Pill>
-        ))}
+    <Form style={props.style}>
+      <input value={data.title} placeholder='...' onChange={e => setData({ ...data, title: e.target.value })} />
+      <textarea value={data.comment} placeholder='Any other information?' onChange={e => setData({ ...data, comment: e.target.value })} />
+      <div id='times'>
+        {times.map(time => {
+          const selected = time === data.duration
+          return <button className={selected ? 'cur-btn' : ''} type='button' onClick={() => setData({ ...data, duration: time })}>{time/1000/60}</button>
+        })}
       </div>
-      
-      <Pill onClick={() => create(form)} style={{
-        display: 'inline-block',
-        padding: '8px 40px',
-        fontSize: 18,
-        marginTop: 20,
-        borderRadius: 4,
-        pointerEvents: form.duration ? 'all' : 'none',
-        // opacity: form.time ? 1 : .5,
-        background: form.duration ? colors.blue : '#eee',
-        color: '#fff',
-      }}>
-        Lesketit
-      </Pill>
-      {/* <p>or</p>
-      <p>+</p>
-      <button>Do it</button> */}
+      <button type='button' onClick={() => create(data)}>create</button>
     </Form>
   )
 }
